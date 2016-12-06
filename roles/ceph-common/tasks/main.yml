@@ -191,7 +191,15 @@
     creates="{{ fetch_directory }}/ceph_cluster_uuid.conf"
   register: cluster_uuid
   become: false
-  when: generate_fsid
+  when:
+    - generate_fsid
+    - ceph_current_fsid.rc != 0
+
+- name: generate cluster uuid when cluster exits
+  local_action: shell echo {{ fsid }} | tee {{ fetch_directory }}/ceph_cluster_uuid.conf
+    creates="{{ fetch_directory }}/ceph_cluster_uuid.conf"
+  become: false
+  when: ceph_current_fsid.rc == 0
 
 - name: read cluster uuid if it already exists
   local_action: command cat {{ fetch_directory }}/ceph_cluster_uuid.conf
